@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>КБ-102 // Analytics</title>
+<style>
+:root{--bg:#070a14;--panel:rgba(18,24,44,.72);--bd:rgba(130,150,255,.18);--tx:#e9ecff;--mut:#8d96b8;--c1:#22d3ee;--c2:#8b5cf6;--c3:#f472b6;--ok:#34d399;--mid:#fbbf24;--bad:#fb7185}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--tx);background:var(--bg);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.bg{position:fixed;inset:0;z-index:-1;background:
+ radial-gradient(900px 500px at 8% -10%,rgba(139,92,246,.30),transparent 60%),
+ radial-gradient(800px 500px at 100% 0%,rgba(34,211,238,.22),transparent 60%),
+ radial-gradient(700px 500px at 50% 115%,rgba(244,114,182,.15),transparent 60%),var(--bg)}
+.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse at 50% 15%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 15%,#000 25%,transparent 75%)}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 16px 70px}
+.mut{color:var(--mut)}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 30px rgba(34,211,238,.45)}
+h1{margin:0;font-size:22px;letter-spacing:.02em}
+h1 i{font-style:normal;background:linear-gradient(90deg,var(--c1),var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:0;color:var(--mut);font-size:13px}
+.status{font-size:12px;color:var(--mut);padding:7px 12px;border:1px solid var(--bd);border-radius:999px;background:var(--panel)}
+.status b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:var(--mid)}
+.status.live b{background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.35}}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:20px;padding:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35);margin-bottom:16px;animation:up .6s both}
+#app>*:nth-child(2){animation-delay:.06s}#app>*:nth-child(3){animation-delay:.12s}#app>*:nth-child(4){animation-delay:.18s}#app>*:nth-child(5){animation-delay:.24s}#app>*:nth-child(6){animation-delay:.3s}
+@keyframes up{from{opacity:0;transform:translateY(16px)}}
+.card h2{margin:0 0 14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:700;display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:18px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--c1),var(--c2))}
+/* picker */
+.picker input{width:100%;padding:12px 16px;border-radius:14px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;outline:none;margin-bottom:12px}
+.picker input:focus{border-color:var(--c1);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;font-size:13px;cursor:pointer;transition:.2s}
+.chip:hover{transform:translateY(-2px);border-color:var(--c1)}
+.chip.on{background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(139,92,246,.3));border-color:var(--c1);box-shadow:0 0 18px rgba(34,211,238,.25)}
+.av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,hsl(var(--h),80%,55%),hsl(calc(var(--h) + 50),80%,45%))}
+/* hero */
+.hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.hero .who{display:flex;gap:18px;align-items:center}
+.hero .av{width:78px;height:78px;font-size:28px;box-shadow:0 0 34px hsla(var(--h),90%,60%,.5)}
+.name{font-size:30px;font-weight:800;line-height:1.1}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tag{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--bd);background:rgba(255,255,255,.05)}
+.tag.g{background:linear-gradient(90deg,rgba(34,211,238,.25),rgba(139,92,246,.3));border-color:transparent}
+.pot{margin-top:10px;font-size:13px;color:var(--mut)}.pot b{color:var(--mid)}
+.ringbox{width:170px}
+.ring{width:100%;display:block}
+.rt{fill:none;stroke:rgba(255,255,255,.08);stroke-width:11}
+.rv{fill:none;stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 6px rgba(34,211,238,.6))}
+.rn{fill:#fff;font-size:30px;font-weight:800}.rs{fill:var(--mut);font-size:11px}
+/* kpi */
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi{padding:16px 18px;margin:0}
+.kpi .l{font-size:12px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+.kpi .v{font-size:34px;font-weight:800;margin:2px 0 6px}
+.kpi .v small{font-size:14px;color:var(--mut);font-weight:600}
+.mini{height:6px;border-radius:6px;background:rgba(255,255,255,.08);position:relative;margin-bottom:8px}
+.mini i{position:absolute;inset:0 auto 0 0;border-radius:6px;background:linear-gradient(90deg,var(--c1),var(--c2));width:0;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.mini u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.7;border-radius:2px}
+.d{font-size:12px;font-weight:700}.up{color:var(--ok)}.down{color:var(--bad)}.eq{color:var(--mut)}
+.two{grid-template-columns:1.05fr 1fr}
+@media(max-width:860px){.two{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.ringbox{margin:0 auto}.name{font-size:24px}.hero .av{width:60px;height:60px;font-size:22px}}
+/* radar */
+.radar{width:100%;max-width:420px;display:block;margin:0 auto}
+.ring2{fill:none;stroke:rgba(255,255,255,.1)}.ax{stroke:rgba(255,255,255,.1)}
+.lb{fill:var(--mut);font-size:11px;font-weight:600}
+.pl{transform-origin:180px 170px;animation:pop .9s cubic-bezier(.2,.9,.2,1) both}
+@keyframes pop{from{transform:scale(.05);opacity:0}}
+.pl.me{fill:rgba(34,211,238,.28);stroke:var(--c1);stroke-width:2.2;filter:drop-shadow(0 0 8px rgba(34,211,238,.6))}
+.pl.avg{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.6;stroke-dasharray:5 4}
+.pl.cmp{fill:rgba(244,114,182,.2);stroke:var(--c3);stroke-width:2}
+.dt.me{fill:var(--c1)}.dt.cmp{fill:var(--c3)}.dt.avg{fill:#fff;opacity:.7}
+.lg{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;font-size:12px;color:var(--mut);margin-top:6px}
+.lg span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--c1)}
+.lg .a::before{background:#fff;opacity:.6}.lg .c::before{background:var(--c3)}
+.cmpbar{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;font-size:13px;color:var(--mut)}
+select{font:inherit;font-size:13px;padding:8px 12px;border-radius:12px;border:1px solid var(--bd);background:rgba(255,255,255,.06);color:var(--tx)}
+select option{background:#12182c;color:#fff}
+table.h2h{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+.h2h td{padding:7px 8px;border-top:1px solid var(--bd);text-align:center}
+.h2h td:first-child{text-align:left;color:var(--mut)}
+.win{color:var(--ok);font-weight:800}
+/* topics */
+.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.t{border-radius:14px;padding:12px;border:1px solid var(--bd);transition:.2s}
+.t:hover{transform:translateY(-3px)}
+.t b{display:block;font-size:24px;line-height:1.1}.t span{font-size:11px;color:var(--mut)}
+.t.s2{background:rgba(52,211,153,.13);border-color:rgba(52,211,153,.45)}
+.t.s1{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.45)}
+.t.s0{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.45)}
+.t.fut{opacity:.4;border-style:dashed}
+ul.ins{margin:16px 0 0;padding-left:18px}ul.ins li{margin:7px 0}
+/* badges */
+.badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bd{padding:14px;border-radius:16px;border:1px solid var(--bd);text-align:center;background:rgba(255,255,255,.03);filter:grayscale(1);opacity:.4;transition:.25s}
+.bd.on{filter:none;opacity:1;background:linear-gradient(160deg,rgba(34,211,238,.16),rgba(139,92,246,.2));border-color:rgba(34,211,238,.45);box-shadow:0 0 22px rgba(34,211,238,.18)}
+.bd.on:hover{transform:translateY(-3px) scale(1.02)}
+.bd div{font-size:30px}.bd span{font-size:12px;font-weight:700}
+/* scatter */
+.sc{width:100%;display:block}
+.sc .gl{stroke:rgba(255,255,255,.07)}.sc text{fill:var(--mut);font-size:10px}
+.sc .pt{fill:rgba(139,92,246,.75);stroke:rgba(255,255,255,.5);cursor:pointer;transition:r .2s}
+.sc .pt:hover{r:9;fill:var(--c3)}
+.sc .pt.me{fill:var(--c1);stroke:#fff;stroke-width:2;filter:drop-shadow(0 0 8px var(--c1))}
+.sc .av-l{stroke:rgba(255,255,255,.35);stroke-dasharray:4 4}
+/* heatmap */
+.hm{overflow-x:auto}
+.hm table{border-collapse:separate;border-spacing:3px;width:100%;min-width:620px;font-size:12px}
+.hm th{color:var(--mut);font-weight:600;padding:4px 6px;font-size:11px}
+.hm td{padding:7px 4px;text-align:center;border-radius:8px;font-variant-numeric:tabular-nums}
+.hm td.n{text-align:left;padding-left:10px;white-space:nowrap;background:none;font-size:13px}
+.hm tr.row{cursor:pointer}.hm tr.row:hover td.n{color:var(--c1)}
+.hm tr.me td.n{color:var(--c1);font-weight:800}
+.hm tr.me td{outline:1px solid rgba(34,211,238,.55)}
+/* ranking */
+.rk{display:grid;grid-template-columns:34px 190px 1fr 56px;gap:10px;align-items:center;padding:7px 8px;border-radius:12px;cursor:pointer;font-size:14px;transition:.2s}
+.rk:hover{background:rgba(255,255,255,.05)}
+.rk.me{background:rgba(34,211,238,.1);outline:1px solid rgba(34,211,238,.5)}
+.rk .b{height:12px;border-radius:8px;background:rgba(255,255,255,.07);position:relative}
+.rk .b i{position:absolute;inset:0 auto 0 0;border-radius:8px;width:0;background:linear-gradient(90deg,var(--c2),var(--c1));transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.rk.me .b i{background:linear-gradient(90deg,var(--c1),#a7f3d0);box-shadow:0 0 12px var(--c1)}
+.rk .b u{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.6}
+.rk b{text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:560px){.rk{grid-template-columns:28px 120px 1fr 44px;font-size:13px}}
+.tip{position:fixed;z-index:99;pointer-events:none;opacity:0;background:#0d1226;border:1px solid var(--c1);border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .15s;max-width:220px}
+.foot{text-align:center;color:var(--mut);font-size:12px;margin-top:20px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="logo">⬢</div><div><h1>КБ-102 <i>// ANALYTICS</i></h1><p>Кібербезпека · успішність групи</p></div></div>
+    <div class="status" id="status"><b></b><span></span></div>
+  </header>
+  <section class="card picker">
+    <h2>Обери студента</h2>
+    <input id="q" placeholder="🔍 Пошук за прізвищем або імʼям…" autocomplete="off">
+    <div class="chips" id="chips"></div>
+  </section>
+  <div id="app"></div>
+  <div class="foot">Дані: Google Sheets · оновлюється при кожному відкритті сторінки</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const SHEET_ID='1WsXuaLAHgmuuxLe6x6STuYrsB8pb8tM2WrOHdw6mJEU';
+const CSV_URL='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&gid=0';
+
+const FALLBACK={
+ topics:['SOC','B/R/P Teams','Daily Monitoring','AAA','OSI Model','IP/TCP','Data Breach'],
+ students:[
+  {name:'Беліков Артем',t:[2,2,null,1,2,2,null],cp:9,vns:4.7,lis:5,credit:18.7},
+  {name:'Гамага Максим',t:[2,2,1,1,2,2,null],cp:10,vns:4.8,lis:5,credit:19.8},
+  {name:'Гуменюк Артур',t:[2,2,null,null,null,null,null],cp:4,vns:null,lis:null,credit:4},
+  {name:'Дубіняк Домініка',t:[2,2,2,2,2,2,null],cp:12,vns:4.8,lis:4.3,credit:21.1},
+  {name:'Ільницький Богдан',t:[2,2,1,null,1.5,null,null],cp:6.5,vns:4.5,lis:4.3,credit:15.3},
+  {name:'Катрук Назар',t:[2,2,1,null,2,null,null],cp:7,vns:null,lis:null,credit:7},
+  {name:'Ковальова Женя',t:[2,2,null,2,2,2,null],cp:10,vns:4.4,lis:5,credit:19.4},
+  {name:'Кухтин Анастасія',t:[2,2,2,2,2,2,null],cp:12,vns:4.8,lis:3.6,credit:20.4},
+  {name:'Мазурик Костянтин',t:[2,2,1,2,2,2,null],cp:11,vns:null,lis:5,credit:16},
+  {name:'Сметана Володимир',t:[2,2,2,null,2,2,null],cp:10,vns:null,lis:4.3,credit:14.3},
+  {name:'Стичук Андрій',t:[2,2,1,1,1.5,null,null],cp:7.5,vns:4.5,lis:4.3,credit:16.3},
+  {name:'Сторож Максим',t:[2,2,2,1,null,2,null],cp:9,vns:null,lis:4.6,credit:13.6},
+  {name:'Тайстра Олександра',t:[2,2,2,2,2,2,null],cp:12,vns:4.9,lis:5,credit:21.9},
+  {name:'Татарчук Дмитро',t:[2,null,2,2,2,2,null],cp:10,vns:null,lis:5,credit:15},
+  {name:'Хамурда Назар',t:[2,2,1,1,1.5,2,null],cp:9.5,vns:4.8,lis:5,credit:19.3}
+ ]};
+
+let D=FALLBACK,live=false,cur=0,cmp=-1;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=x=>{x=(x||'').toString().trim().replace(',','.');if(x==='')return null;const v=parseFloat(x);return isNaN(v)?null:v};
+const r1=v=>Math.round(v*10)/10;
+const f=v=>v==null?'—':String(r1(v));
+const avg=a=>{a=a.filter(x=>x!=null);return a.length?a.reduce((s,x)=>s+x,0)/a.length:null};
+const clamp=v=>Math.max(0,Math.min(1,v));
+const hue=n=>[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*7%360;
+const ini=n=>n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+/* ---------- CSV ---------- */
+function parseCSV(t){
+  const rows=[];let r=[],c='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;
+    else if(ch===','){r.push(c);c=''}
+    else if(ch==='\n'){r.push(c);rows.push(r);r=[];c=''}
+    else if(ch!=='\r')c+=ch;
+  }
+  if(c!==''||r.length){r.push(c);rows.push(r)}
+  return rows;
+}
+function fromCSV(rows){
+  const h=rows.findIndex(r=>(r[0]||'').trim()==='Students');
+  if(h<0)throw new Error('header');
+  const H=rows[h].map(x=>x.trim()),ix=n=>H.indexOf(n);
+  const ti=H.map((x,i)=>/^T\d+$/.test(x)?i:-1).filter(i=>i>=0);
+  let r=h+1;const st=[];
+  for(;r<rows.length&&(rows[r][0]||'').trim();r++){
+    const row=rows[r];
+    st.push({name:row[0].trim(),t:ti.map(i=>num(row[i])),cp:num(row[ix('CP Total')]),vns:num(row[ix('VNS 1')]),lis:num(row[ix('Listening 1')]),credit:num(row[ix('Credit')])});
+  }
+  const nm=ti.map(i=>((rows[r]||[])[i]||'').trim());
+  const keep=nm.map((n,i)=>n?i:-1).filter(i=>i>=0);
+  if(!st.length||!keep.length)throw new Error('empty');
+  return{topics:keep.map(i=>nm[i]),students:st.map(s=>({...s,t:keep.map(i=>s.t[i]),
+    cp:s.cp??keep.reduce((a,i)=>a+(s.t[i]||0),0),
+    credit:s.credit??((s.cp||0)+(s.vns||0)+(s.lis||0))}))};
+}
+
+/* ---------- Розрахунки ---------- */
+function calc(){
+  const S=D.students;
+  const hIdx=D.topics.map((_,i)=>S.some(s=>s.t[i]!=null)?i:-1).filter(i=>i>=0);
+  const maxCP=Math.max(2,hIdx.length*2),maxCredit=maxCP+10;
+  const att=s=>hIdx.filter(i=>s.t[i]!=null).length;
+  const A={cp:avg(S.map(s=>s.cp)),vns:avg(S.map(s=>s.vns)),lis:avg(S.map(s=>s.lis)),credit:avg(S.map(s=>s.credit)),reg:avg(S.map(s=>att(s)/hIdx.length))};
+  const sorted=[...S].sort((a,b)=>b.credit-a.credit);
+  const rank=s=>1+S.filter(x=>x.credit>s.credit).length;
+  const vec=s=>[clamp(s.cp/maxCP),clamp((s.vns||0)/5),clamp((s.lis||0)/5),clamp(s.credit/maxCredit),clamp(att(s)/hIdx.length)];
+  const avec=[clamp(A.cp/maxCP),clamp(A.vns/5),clamp(A.lis/5),clamp(A.credit/maxCredit),clamp(A.reg)];
+  return{S,hIdx,maxCP,maxCredit,att,A,sorted,rank,vec,avec};
+}
+
+/* ---------- SVG-компоненти ---------- */
+function ringSvg(v,max){
+  const C=2*Math.PI*54,p=clamp(v/max);
+  return `<svg viewBox="0 0 140 140" class="ring"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+  <circle cx="70" cy="70" r="54" class="rt"/>
+  <circle cx="70" cy="70" r="54" class="rv" stroke="url(#rg)" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C*(1-p)}" transform="rotate(-90 70 70)"/>
+  <text x="70" y="72" text-anchor="middle" class="rn" data-count="${v}" data-dec="1">0</text>
+  <text x="70" y="92" text-anchor="middle" class="rs">з ${max} балів</text></svg>`;
+}
+function radarSvg(series){
+  const labels=['Участь','VNS 1','Listening 1','Credit','Регулярність'];
+  const cx=180,cy=170,R=112,n=labels.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+Math.cos(a)*R*r,cy+Math.sin(a)*R*r]};
+  let g='';
+  [.25,.5,.75,1].forEach(r=>g+=`<polygon class="ring2" points="${labels.map((_,i)=>pt(i,r).map(x=>x.toFixed(1)).join(',')).join(' ')}"/>`);
+  labels.forEach((l,i)=>{
+    const[x,y]=pt(i,1),[lx,ly]=pt(i,1.22);
+    g+=`<line class="ax" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="lb" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${l}</text>`;
+  });
+  series.forEach(s=>{
+    const P=s.v.map((v,i)=>pt(i,Math.max(.03,clamp(v))));
+    g+=`<polygon class="pl ${s.cls}" points="${P.map(p=>p.map(x=>x.toFixed(1)).join(',')).join(' ')}"/>`;
+    P.forEach(p=>g+=`<circle class="dt ${s.cls}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5"/>`);
+  });
+  return `<svg viewBox="0 0 360 340" class="radar">${g}</svg>`;
+}
+function scatterSvg(c){
+  const W=620,H=310,pl=44,pr=18,pt=16,pb=38,mx=c.maxCP,my=10;
+  const X=v=>pl+v/mx*(W-pl-pr),Y=v=>H-pb-v/my*(H-pt-pb);
+  let g='';
+  for(let y=0;y<=10;y+=2)g+=`<line class="gl" x1="${pl}" x2="${W-pr}" y1="${Y(y)}" y2="${Y(y)}"/><text x="${pl-8}" y="${Y(y)+3}" text-anchor="end">${y}</text>`;
+  for(let x=0;x<=mx;x+=2)g+=`<line class="gl" y1="${pt}" y2="${H-pb}" x1="${X(x)}" x2="${X(x)}"/><text x="${X(x)}" y="${H-pb+16}" text-anchor="middle">${x}</text>`;
+  g+=`<line class="av-l" x1="${X(c.A.cp)}" x2="${X(c.A.cp)}" y1="${pt}" y2="${H-pb}"/><line class="av-l" x1="${pl}" x2="${W-pr}" y1="${Y((c.A.vns||0)+(c.A.lis||0))}" y2="${Y((c.A.vns||0)+(c.A.lis||0))}"/>`;
+  g+=`<text x="${W/2}" y="${H-4}" text-anchor="middle">Участь на парах (бали)</text><text transform="translate(11 ${H/2}) rotate(-90)" text-anchor="middle">Тести: VNS + Listening</text>`;
+  c.S.forEach((s,i)=>{
+    const y=(s.vns||0)+(s.lis||0);
+    g+=`<circle class="pt${i===cur?' me':''}" data-i="${i}" r="${i===cur?8:6}" cx="${X(s.cp)}" cy="${Y(y)}" data-tip="<b>${esc(s.name)}</b><br>Участь: ${f(s.cp)} · Тести: ${f(y)}<br>Credit: ${f(s.credit)}"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="sc">${g}</svg>`;
+}
+const cellStyle=r=>`background:hsla(${Math.round(clamp(r)*135)},80%,52%,${(.16+.34*clamp(r)).toFixed(2)})`;
+
+/* ---------- Рендер ---------- */
+function render(){
+  const c=calc(),{S,hIdx,maxCP,maxCredit,A,sorted}=c;
+  const s=S[cur],n=S.length,rank=c.rank(s),att=c.att(s);
+  const hh=hue(s.name);
+  const missed=hIdx.filter(i=>s.t[i]==null),partial=hIdx.filter(i=>s.t[i]!=null&&s.t[i]<2);
+  const pot=hIdx.reduce((a,i)=>a+(2-(s.t[i]||0)),0)+(s.vns==null?5:0)+(s.lis==null?5:0);
+  const pr=rank/n;
+  const level=pr<=.1?'🔥 Легенда групи':pr<=.3?'⚡ Сильний рівень':pr<=.6?'✅ Стабільний рівень':'🌱 Є куди рости';
+
+  const kpi=(l,v,max,a,dec)=>{
+    const d=(v==null||a==null)?'<div class="d eq">немає даних</div>':(()=>{const x=r1(v-a);return x>0?`<div class="d up">▲ +${x} до середнього</div>`:x<0?`<div class="d down">▼ ${x} до середнього</div>`:'<div class="d eq">= середнє групи</div>'})();
+    return `<div class="card kpi"><div class="l">${l}</div><div class="v">${v==null?'—':`<span data-count="${v}" data-dec="${dec}">0</span>`} <small>/ ${max}</small></div>
+    <div class="mini"><i data-w="${v==null?0:clamp(v/max)*100}"></i><u style="left:${a==null?0:clamp(a/max)*100}%"></u></div>${d}</div>`;
+  };
+
+  const topics=D.topics.map((name,i)=>{
+    const held=hIdx.includes(i),v=s.t[i];
+    const cls=!held?'fut':v==null?'s0':v>=2?'s2':'s1';
+    const big=!held?'·':v==null?'0':f(v);
+    const sub=!held?'ще не було':v==null?'пропуск':v>=2?'максимум':'частково';
+    return `<div class="t ${cls}"><b>${big}</b><span>${esc(name)} · ${sub}</span></div>`;
+  }).join('');
+
+  const ins=[];
+  ins.push(`Місце в групі: <b>${rank} з ${n}</b> за Credit (${f(s.credit)} б. проти середнього ${f(A.credit)}).`);
+  ins.push(missed.length?`Пропущені теми: <b>${missed.map(i=>esc(D.topics[i])).join(', ')}</b> — це ${missed.length*2} б.`:'Усі проведені теми відвідані — чудова регулярність.');
+  if(partial.length)ins.push(`Не на максимум: ${partial.map(i=>esc(D.topics[i])).join(', ')}.`);
+  if(s.vns==null)ins.push('Немає оцінки за <b>VNS 1</b> — найшвидший спосіб підняти Credit (до 5 б.).');
+  else if(A.vns!=null&&s.vns<A.vns)ins.push(`VNS 1 нижче середнього групи (${f(A.vns)}).`);
+  if(s.lis==null)ins.push('Немає оцінки за <b>Listening 1</b> (до 5 б.).');
+  else if(A.lis!=null&&s.lis<A.lis)ins.push(`Listening 1 нижче середнього групи (${f(A.lis)}).`);
+  ins.push(sorted[0]===s?'Ти лідер групи за Credit 🏆':`До лідера (${esc(sorted[0].name)}) не вистачає ${f(sorted[0].credit-s.credit)} б.`);
+
+  const badges=[
+    ['🏆','Лідер групи',rank===1],
+    ['🎯','Без пропусків',!missed.length],
+    ['💎','Усі теми на максимум',hIdx.every(i=>s.t[i]===2)],
+    ['🎧','Listening 5.0',s.lis===5],
+    ['🧠','VNS ≥ 4.8',s.vns!=null&&s.vns>=4.8],
+    ['🚀','Credit вище середнього',s.credit>A.credit],
+    ['📈','Топ-30% групи',pr<=.3]
+  ];
+
+  /* порівняння */
+  const o=cmp>=0?S[cmp]:null;
+  const series=[{v:c.avec,cls:'avg'},{v:c.vec(s),cls:'me'}];
+  if(o)series.splice(1,0,{v:c.vec(o),cls:'cmp'});
+  let h2h='';
+  if(o){
+    const rows=[['Credit',s.credit,o.credit],['Участь',s.cp,o.cp],['VNS 1',s.vns,o.vns],['Listening 1',s.lis,o.lis],['Регулярність (тем)',att,c.att(o)]];
+    h2h=`<table class="h2h"><tr><td></td><td><b style="color:var(--c1)">${esc(s.name.split(' ')[0])}</b></td><td><b style="color:var(--c3)">${esc(o.name.split(' ')[0])}</b></td></tr>`+
+      rows.map(([l,a,b])=>`<tr><td>${l}</td><td class="${(a||0)>(b||0)?'win':''}">${f(a)}</td><td class="${(b||0)>(a||0)?'win':''}">${f(b)}</td></tr>`).join('')+'</table>';
+  }
+  const cmpSel=`<div class="cmpbar">Порівняти з: <select id="cmp"><option value="-1">— тільки середнє групи —</option>${S.map((x,i)=>i===cur?'':`<option value="${i}"${i===cmp?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>`;
+
+  /* теплова карта */
+  const cols=hIdx.map(i=>({n:D.topics[i],max:2,get:x=>x.t[i]})).concat([{n:'VNS 1',max:5,get:x=>x.vns},{n:'Listening 1',max:5,get:x=>x.lis}]);
+  const hm=`<div class="hm"><table><tr><th></th>${cols.map(k=>`<th>${esc(k.n)}</th>`).join('')}<th>Credit</th></tr>`+
+    sorted.map(x=>{const i=S.indexOf(x);return `<tr class="row${i===cur?' me':''}" data-i="${i}"><td class="n">${esc(x.name)}</td>`+
+      cols.map(k=>{const v=k.get(x);return v==null?`<td style="background:rgba(255,255,255,.04);color:var(--mut)">·</td>`:`<td style="${cellStyle(v/k.max)}">${f(v)}</td>`}).join('')+
+      `<td style="${cellStyle(x.credit/maxCredit)};font-weight:800">${f(x.credit)}</td></tr>`}).join('')+'</table></div>';
+
+  /* рейтинг */
+  const rk=sorted.map(x=>{
+    const i=S.indexOf(x),r=c.rank(x),m=r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
+    return `<div class="rk${i===cur?' me':''}" data-i="${i}"><span>${m}</span><span>${esc(x.name)}</span><div class="b"><i data-w="${clamp(x.credit/maxCredit)*100}"></i><u style="left:${clamp(A.credit/maxCredit)*100}%"></u></div><b>${f(x.credit)}</b></div>`;
+  }).join('');
+
+  $('app').innerHTML=`
+  <section class="card hero" style="--h:${hh}">
+    <div class="who"><div class="av">${ini(s.name)}</div><div>
+      <div class="name">${esc(s.name)}</div>
+      <div class="tags"><span class="tag g">#${rank} з ${n}</span><span class="tag">${level}</span><span class="tag">Топ ${Math.max(1,Math.round(pr*100))}%</span></div>
+      <div class="pot">Невикористані бали: <b>+${f(pot)}</b> (пропущені теми та відсутні оцінки)</div>
+    </div></div>
+    <div class="ringbox">${ringSvg(s.credit,maxCredit)}</div>
+  </section>
+  <div class="grid kpis">${kpi('Участь (CP)',s.cp,maxCP,A.cp,1)}${kpi('VNS 1',s.vns,5,A.vns,1)}${kpi('Listening 1',s.lis,5,A.lis,1)}${kpi('Регулярність',att,hIdx.length,A.reg*hIdx.length,0)}</div>
+  <div class="grid two" style="margin-top:16px">
+    <section class="card"><h2>Профіль компетенцій</h2>${radarSvg(series)}
+      <div class="lg"><span>${esc(s.name.split(' ')[0])}</span><span class="a">Середнє групи</span>${o?`<span class="c">${esc(o.name.split(' ')[0])}</span>`:''}</div>${cmpSel}${h2h}</section>
+    <section class="card"><h2>Теми занять</h2><div class="topics">${topics}</div>
+      <ul class="ins">${ins.map(x=>`<li>${x}</li>`).join('')}</ul></section>
+  </div>
+  <section class="card"><h2>Досягнення</h2><div class="badges">${badges.map(b=>`<div class="bd${b[2]?' on':''}"><div>${b[0]}</div><span>${b[1]}</span></div>`).join('')}</div></section>
+  <section class="card"><h2>Участь vs тести — уся група</h2>${scatterSvg(c)}<div class="lg"><span>Студенти</span><span class="a">Пунктир — середнє групи</span></div></section>
+  <section class="card"><h2>Теплова карта групи</h2>${hm}</section>
+  <section class="card"><h2>Рейтинг за Credit</h2>${rk}<div class="lg"><span class="a">Біла риска — середнє групи</span></div></section>`;
+
+  after();
+}
+
+/* ---------- Анімації та події ---------- */
+function after(){
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.rv').forEach(e=>e.style.strokeDashoffset=e.dataset.off);
+    document.querySelectorAll('[data-w]').forEach(e=>e.style.width=e.dataset.w+'%');
+  }));
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const to=+el.dataset.count,dec=+(el.dataset.dec||0);
+    if(reduce){el.textContent=to.toFixed(dec);return}
+    const t0=performance.now(),dur=1100;
+    const step=t=>{const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=(to*e).toFixed(dec);if(p<1)requestAnimationFrame(step)};
+    requestAnimationFrame(step);
+  });
+  const sel=$('cmp');if(sel)sel.onchange=()=>{cmp=+sel.value;render()};
+  document.querySelectorAll('.rk,.row').forEach(el=>el.onclick=()=>pick(+el.dataset.i,true));
+  document.querySelectorAll('.pt').forEach(el=>el.addEventListener('click',()=>pick(+el.dataset.i,true)));
+  const tip=$('tip');
+  document.querySelectorAll('[data-tip]').forEach(el=>{
+    el.addEventListener('mousemove',e=>{tip.innerHTML=el.dataset.tip;tip.style.opacity=1;tip.style.left=Math.min(innerWidth-230,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px'});
+    el.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+}
+
+/* ---------- Вибір студента ---------- */
+function drawChips(){
+  const q=$('q').value.trim().toLowerCase();
+  const html=D.students.map((s,i)=>({s,i})).filter(o=>o.s.name.toLowerCase().includes(q))
+    .map(o=>`<button class="chip${o.i===cur?' on':''}" data-i="${o.i}"><span class="av" style="--h:${hue(o.s.name)}">${ini(o.s.name)}</span>${esc(o.s.name)}</button>`).join('');
+  $('chips').innerHTML=html||'<span class="mut">Нікого не знайдено</span>';
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>pick(+b.dataset.i,false));
+}
+function pick(i,scroll){
+  cur=i;if(cmp===cur)cmp=-1;
+  location.hash=encodeURIComponent(D.students[cur].name);
+  drawChips();render();
+  if(scroll)$('app').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function setStatus(){
+  const st=$('status');st.className='status'+(live?' live':'');
+  st.querySelector('span').textContent=live?'Наживо з Google Sheets':'Вбудована копія даних';
+}
+function init(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  const i=D.students.findIndex(s=>s.name===h);
+  cur=i>=0?i:0;if(cmp>=D.students.length)cmp=-1;
+  drawChips();render();setStatus();
+}
+$('q').addEventListener('input',drawChips);
+init();
+fetch(CSV_URL).then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{
+  D=fromCSV(parseCSV(t));live=true;init();
+}).catch(()=>{});
+</script>
+</body>
+</html>
