@@ -198,7 +198,7 @@ ul.ins li::before{content:"";position:absolute;left:2px;top:.55em;width:8px;heig
     <div class="status" id="status"><b></b><span></span></div>
   </header>
   <section class="card picker" id="picker" hidden>
-    <h2>Обери студента</h2>
+    <h2>Хто ти? Обери себе</h2>
     <input id="q" type="search" placeholder="🔍 Пошук за прізвищем або імʼям…" autocomplete="off">
     <div class="chips" id="chips"></div>
   </section>
@@ -212,13 +212,14 @@ ul.ins li::before{content:"";position:absolute;left:2px;top:.55em;width:8px;heig
 const SHEET_ID='1WsXuaLAHgmuuxLe6x6STuYrsB8pb8tM2WrOHdw6mJEU';
 const GID='0';
 const TOTAL=100;      // максимум балів за весь курс (кільце, рейтинг, Credit)
+const KEY='kb102_student';   // ключ збереження вибраного студента в браузері
 const URLS=[
   'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&gid='+GID,
   'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid='+GID
 ];
 
 /* ================= СТАН ================= */
-let D=null,live=false,cur=0,cmp=-1,lastC=null;
+let D=null,live=false,cur=-1,cmp=-1,lastC=null;   // cur=-1 → ще ніхто не обраний
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=x=>{x=(x||'').toString().trim().replace(',','.');if(x==='')return null;const v=parseFloat(x);return isNaN(v)?null:v};
@@ -348,6 +349,11 @@ const cellStyle=r=>`background:hsla(${Math.round(clamp(r)*135)},80%,52%,${(.16+.
 
 /* ================= РЕНДЕР ================= */
 function render(){
+  if(cur<0){
+    lastC=null;
+    $('app').innerHTML='<section class="card state"><div class="big">👋</div><b style="font-size:20px">Привіт! Хто ти?</b><p>Обери себе у списку вище. Наступного разу я одразу відкрию твою сторінку.</p></section>';
+    return;
+  }
   const c=calc();lastC=c;
   const{S,hIdx,nH,maxCP,maxAvail,A,sorted}=c;
   const s=S[cur],n=S.length,rank=c.rank(s),att=c.att(s);
@@ -490,7 +496,8 @@ function drawChips(){
 }
 function pick(i,scroll){
   cur=i;if(cmp===cur)cmp=-1;
-  history.replaceState(null,'','#'+encodeURIComponent(D.students[cur].name));
+  /* запам'ятовуємо лише вибір через верхній список «Хто ти?» */
+  if(!scroll){try{localStorage.setItem(KEY,D.students[i].name)}catch(e){}}
   drawChips();render();
   if(scroll)$('app').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -510,9 +517,10 @@ function showError(e){
   $('retry').onclick=start;
 }
 function init(){
-  const h=decodeURIComponent(location.hash.slice(1));
-  const i=D.students.findIndex(s=>s.name===h);
-  cur=i>=0?i:0;cmp=-1;
+  let sv='';
+  try{sv=localStorage.getItem(KEY)||''}catch(e){}
+  cur=D.students.findIndex(s=>s.name===sv);   // -1, якщо ще ніхто не обраний
+  cmp=-1;
   $('picker').hidden=false;
   drawChips();render();setStatus('live');
 }
